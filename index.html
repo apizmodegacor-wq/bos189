@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Mahjong Slot Upgrade</title>
+  <style>
+    body {
+      font-family: Arial;
+      text-align: center;
+      background: #0b0b0b;
+      color: white;
+      margin-top: 20px;
+    }
+
+    .info {
+      font-size: 18px;
+      margin-bottom: 10px;
+    }
+
+    .reels {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin: 20px;
+    }
+
+    .reel {
+      font-size: 50px;
+      background: white;
+      color: black;
+      width: 70px;
+      height: 70px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 10px;
+    }
+
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      margin: 5px;
+      cursor: pointer;
+    }
+
+    .spin {
+      animation: shake 0.1s infinite;
+    }
+
+    @keyframes shake {
+      0% { transform: translateY(0px); }
+      50% { transform: translateY(-4px); }
+      100% { transform: translateY(4px); }
+    }
+  </style>
+</head>
+<body>
+
+<h1>🎰🀄 Mahjong Slot PRO</h1>
+
+<div class="info">
+  💰 Koin: <span id="coins">20000</span> |
+  🎲 Bet: <span id="bet">1000</span> |
+  🔥 Free Spin: <span id="free">0</span>
+</div>
+
+<button onclick="changeBet(-1000)">- Bet</button>
+<button onclick="changeBet(1000)">+ Bet</button>
+
+<br>
+
+<div class="reels">
+  <div class="reel" id="r1">❓</div>
+  <div class="reel" id="r2">❓</div>
+  <div class="reel" id="r3">❓</div>
+  <div class="reel" id="r4">❓</div>
+  <div class="reel" id="r5">❓</div>
+</div>
+
+<button onclick="spin()">SPIN</button>
+
+<!-- 🔊 SOUND -->
+<audio id="spinSound">
+  <source src="https://www.soundjay.com/buttons/sounds/button-16.mp3">
+</audio>
+
+<audio id="winSound">
+  <source src="https://www.soundjay.com/misc/sounds/bell-ringing-05.mp3">
+</audio>
+
+<script>
+let coins = 20000;
+let bet = 1000;
+let freeSpin = 0;
+
+let tiles = ["🀄","🀅","🀆","🀇","🀈","🀉","🀊","🀋","🀌","🎁"];
+
+function updateUI() {
+  document.getElementById("coins").innerHTML = coins;
+  document.getElementById("bet").innerHTML = bet;
+  document.getElementById("free").innerHTML = freeSpin;
+}
+
+function changeBet(val) {
+  bet += val;
+  if (bet < 1000) bet = 1000;
+  if (bet > 1000000) bet = 1000000;
+  updateUI();
+}
+
+function rand() {
+  return tiles[Math.floor(Math.random() * tiles.length)];
+}
+
+// 🔊 SOUND PLAY
+function playSpinSound() {
+  document.getElementById("spinSound").play();
+}
+function playWinSound() {
+  document.getElementById("winSound").play();
+}
+
+// 🎰 SPIN
+function spin() {
+
+  if (freeSpin > 0) {
+    freeSpin--;
+  } else {
+    if (coins < bet) {
+      alert("❌ Koin tidak cukup!");
+      return;
+    }
+    coins -= bet;
+  }
+
+  updateUI();
+
+  playSpinSound();
+
+  let reels = [
+    document.getElementById("r1"),
+    document.getElementById("r2"),
+    document.getElementById("r3"),
+    document.getElementById("r4"),
+    document.getElementById("r5")
+  ];
+
+  reels.forEach(r => r.classList.add("spin"));
+
+  let results = [];
+
+  // 🎡 STOP REEL SATU PER SATU
+  reels.forEach((reel, i) => {
+    setTimeout(() => {
+      let interval = setInterval(() => {
+        reel.innerHTML = rand();
+      }, 80);
+
+      setTimeout(() => {
+        clearInterval(interval);
+        let final = rand();
+        reel.innerHTML = final;
+        results.push(final);
+
+        if (results.length === 5) checkResult(results, reels);
+      }, 800 + i * 400);
+
+    }, i * 200);
+  });
+}
+
+// 🏆 CHECK HASIL
+function checkResult(values, reels) {
+
+  reels.forEach(r => r.classList.remove("spin"));
+
+  let jackpot = values.every(v => v === values[0]);
+  let scatter = values.filter(v => v === "🎁").length;
+
+  if (jackpot) {
+    let reward = bet * 20;
+    coins += reward;
+    playWinSound();
+    alert("🎉 JACKPOT + " + reward);
+  } else {
+    alert("❌ Kalah!");
+  }
+
+  if (scatter >= 3) {
+    freeSpin += 10;
+    alert("🎁 SCATTER! +10 Free Spin");
+  }
+
+  updateUI();
+}
+</script>
+
+</body>
+</html>
